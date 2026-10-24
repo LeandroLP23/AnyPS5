@@ -7,9 +7,10 @@ jobs:
       - uses: actions/checkout@v4
       - shell: pwsh
         run: |
-          Set-Location bin
-          foreach ($d in 'wasapi', 'directsound', 'winmm') {
-            $env:SDL_AUDIODRIVER = $d
-            "== $d"
-            & .\probe.exe 2>&1
+          foreach ($run in 1, 2) {
+            foreach ($t in @('before\guest_audio3d_port_tests.exe', 'after\guest_audio3d_port_tests.exe', 'after\audio_out2_device_state_tests.exe')) {
+              $s = [Diagnostics.Stopwatch]::StartNew()
+              & ".\$t" *> $null
+              "run $run {0,-42} {1,6:N1} s exit={2}" -f $t, $s.Elapsed.TotalSeconds, $LASTEXITCODE
+            }
           }
