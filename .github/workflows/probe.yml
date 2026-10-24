@@ -7,13 +7,9 @@ jobs:
       - uses: actions/checkout@v4
       - shell: pwsh
         run: |
-          Get-Service Audiosrv, AudioEndpointBuilder | Format-Table Name, Status, StartType
-          Get-CimInstance Win32_SoundDevice | Format-Table Name, Status
           Set-Location bin
-          foreach ($d in '', 'wasapi', 'directsound', 'winmm', 'dummy') {
-            if ($d) { $env:SDL_AUDIODRIVER = $d } else { Remove-Item Env:SDL_AUDIODRIVER -ErrorAction SilentlyContinue }
-            $s = [Diagnostics.Stopwatch]::StartNew()
-            $out = & .\guest_audio3d_port_tests.exe 2>&1 | Select-Object -Last 3
-            "driver='{0}' {1:N1}s exit={2}" -f $d, $s.Elapsed.TotalSeconds, $LASTEXITCODE
-            $out
+          foreach ($d in 'wasapi', 'directsound', 'winmm') {
+            $env:SDL_AUDIODRIVER = $d
+            "== $d"
+            & .\probe.exe 2>&1
           }
